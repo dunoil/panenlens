@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+
+  /* Leaf — primary greens */
+  --color-leaf-50: #f3f7ee;
+  --color-leaf-100: #e2eed4;
+  --color-leaf-200: #c6ddad;
+  --color-leaf-300: #9ec47d;
+  --color-leaf-400: #78b156;
+  --color-leaf-500: #5a913d;
+  --color-leaf-600: #467430;
+  --color-leaf-700: #385b28;
+  --color-leaf-800: #2f4a23;
+  --color-leaf-900: #1e4620;
+  --color-leaf-950: #122b14;
+
+  /* Harvest — warm amber accent */
+  --color-harvest-50: #fdf8eb;
+  --color-harvest-100: #f9ebc8;
+  --color-harvest-200: #f3d68e;
+  --color-harvest-300: #ecbc54;
+  --color-harvest-400: #e6a62c;
+  --color-harvest-500: #d98a16;
+  --color-harvest-600: #bc6711;
+  --color-harvest-700: #974b12;
+
+  --shadow-card: 0 1px 2px rgb(18 43 20 / 0.05), 0 8px 24px -12px rgb(18 43 20 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(18 43 20 / 0.06), 0 16px 40px -16px rgb(18 43 20 / 0.28);
+
+  --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-leaf-50 text-leaf-950 font-sans antialiased;
+  background-image:
+    radial-gradient(60rem 30rem at 110% -10%, rgb(90 145 61 / 0.12), transparent 60%),
+    radial-gradient(50rem 26rem at -10% 0%, rgb(217 138 22 / 0.08), transparent 55%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--color-leaf-200);
+}
