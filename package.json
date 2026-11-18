@@ -1,7 +1,7 @@
 {
   "name": "panenlens",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -24,5 +24,7 @@
     "tailwindcss": "^4.3.5",
     "typescript": "~7.0.2",
     "vite": "^8.3.6"
-  }
+  },
+  "description": "PanenLens — AI plant doctor for smallholder farmers. Cloud Gemini diagnoses leaf photos; on-device Gemini Nano simplifies, translates and triages offline. Built with Firebase AI Logic hybrid inference.",
+  "license": "Apache-2.0"
 }
