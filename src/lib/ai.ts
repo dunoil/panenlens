@@ -37,9 +37,9 @@ import type {
 } from "./types";
 
 /** Cloud model for photo diagnosis (multimodal, structured output). */
-const CLOUD_DIAGNOSIS_MODEL = "gemini-2.5-flash";
+const CLOUD_DIAGNOSIS_MODEL = "gemini-3.8-flash";
 /** Cloud fallback used when a hybrid request cannot run on-device. */
-const HYBRID_CLOUD_FALLBACK_MODEL = "gemini-2.5-flash-lite";
+const HYBRID_CLOUD_FALLBACK_MODEL = "gemini-3.5-flash-lite";
 
 const AGRO_SYSTEM_PROMPT =
   "You are PanenLens, an expert agronomist and plant pathologist who advises " +

@@ -33,7 +33,7 @@ The badge records which of these three methods determined it (`determinedBy`), a
 ### Fallbacks & platform notes
 
 - On-device inference uses Chrome's **Prompt API** and needs **Chrome 139+ on desktop** with Gemini Nano available (the model downloads once, with progress shown in the UI, via `model.initializeDeviceModel()`).
-- When Nano is unavailable, `PREFER_ON_DEVICE` requests **fall back automatically** to a cloud Gemini model (`gemini-2.5-flash-lite`) — features keep working and the badge shows `Cloud · Gemini`.
+- When Nano is unavailable, `PREFER_ON_DEVICE` requests **fall back automatically** to a cloud Gemini model (`gemini-3.5-flash-lite`) — features keep working and the badge shows `Cloud · Gemini`.
 - On-device inference is **single-turn only**, so the triage chat folds recent conversation history into each prompt; the identical prompt works on both backends.
 - **App Check** is initialized before any AI call (Firebase AI Logic enforces it): reCAPTCHA v3 in production, the App Check **debug provider** for local development.
 - Diagnosis history is stored **only in `localStorage`** on the user's device — no account, no server copy.
