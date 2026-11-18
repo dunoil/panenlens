@@ -98,24 +98,32 @@ function resolveMeta(args: {
 /** Map raw SDK errors to messages a farmer (or judge) can act on. */
 function friendlyError(err: unknown): Error {
   const raw = err instanceof Error ? err.message : String(err);
+  // Keep the raw SDK error visible for diagnosis (and log it): a friendly
+  // message alone hides whether the failure was App Check, quota, or API.
+  console.error("[PanenLens] AI request failed:", err);
+  const details = `\n\nTechnical details: ${raw.slice(0, 400)}`;
   if (/app-check|appcheck|unauthorized|401|403/i.test(raw)) {
     return new Error(
-      "The request was blocked by App Check. For local development, register an App Check debug token in the Firebase console and set VITE_FIREBASE_APPCHECK_DEBUG_TOKEN in .env.local.",
+      "The request was blocked by App Check. For local development, register an App Check debug token in the Firebase console and set VITE_FIREBASE_APPCHECK_DEBUG_TOKEN in .env.local." +
+        details,
     );
   }
   if (/quota|429|resource-exhausted/i.test(raw)) {
     return new Error(
-      "The free Gemini quota is exhausted right now. Please wait a little and try again.",
+      "The free Gemini quota is exhausted right now. Please wait a little and try again." +
+        details,
     );
   }
   if (/offline|network|fetch|failed to fetch/i.test(raw)) {
     return new Error(
-      "Network problem — this feature needs a connection. (On-device features keep working offline once Gemini Nano is downloaded.)",
+      "Network problem — this feature needs a connection. (On-device features keep working offline once Gemini Nano is downloaded.)" +
+        details,
     );
   }
   if (/on-device|ondevice|language model|prompt api/i.test(raw)) {
     return new Error(
-      "On-device AI is not available in this browser. PanenLens needs Chrome 139+ on desktop with Gemini Nano for offline features; cloud features still work.",
+      "On-device AI is not available in this browser. PanenLens needs Chrome 139+ on desktop with Gemini Nano for offline features; cloud features still work." +
+        details,
     );
   }
   return new Error(`AI request failed: ${raw}`);
