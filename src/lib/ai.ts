@@ -36,8 +36,16 @@ import type {
   InferenceBackend,
 } from "./types";
 
-/** Cloud model for photo diagnosis (multimodal, structured output). */
-const CLOUD_DIAGNOSIS_MODEL = "gemini-3.8-flash";
+/**
+ * Cloud model for photo diagnosis (multimodal, structured output).
+ * gemini-3.5-flash-lite is the primary: verified live against this project
+ * (18 Nov 2026) to return a correct, fully structured diagnosis in seconds,
+ * while gemini-3.8-flash repeatedly returned 500 "high demand" / 503
+ * deadline errors for new-user projects. The flagship stays as fallback.
+ */
+const CLOUD_DIAGNOSIS_MODEL = "gemini-3.5-flash-lite";
+/** Fallback diagnosis model if the primary ever fails. */
+const CLOUD_DIAGNOSIS_FALLBACK_MODEL = "gemini-3.8-flash";
 /** Cloud fallback used when a hybrid request cannot run on-device. */
 const HYBRID_CLOUD_FALLBACK_MODEL = "gemini-3.5-flash-lite";
 
@@ -361,10 +369,9 @@ export async function diagnoseLeafPhoto(
   imageBase64: string,
   mimeType: string,
 ): Promise<{ diagnosis: Diagnosis; meta: AIRunMeta }> {
-  // Resilience: the flagship cloud model can hit transient "high demand"
-  // 500s. Retry it once, then fall back to the Lite cloud model (also
-  // multimodal) so a farmer still gets a diagnosis; the router badge shows
-  // whichever model actually served the answer.
+  // Resilience chain: primary model, one retry on transient overload,
+  // then the fallback model. The router badge shows whichever model
+  // actually served the answer.
   try {
     return await runDiagnosisOnce(CLOUD_DIAGNOSIS_MODEL, imageBase64, mimeType);
   } catch (firstErr) {
@@ -379,13 +386,13 @@ export async function diagnoseLeafPhoto(
   } catch (secondErr) {
     if (!isOverloadError(secondErr)) throw friendlyError(secondErr);
     console.warn(
-      "[PanenLens] Diagnosis model still overloaded, falling back to Lite:",
+      "[PanenLens] Diagnosis model still overloaded, falling back:",
       secondErr,
     );
   }
   try {
     return await runDiagnosisOnce(
-      HYBRID_CLOUD_FALLBACK_MODEL,
+      CLOUD_DIAGNOSIS_FALLBACK_MODEL,
       imageBase64,
       mimeType,
     );
