@@ -120,6 +120,8 @@ export function AboutView() {
               {
                 {
                   recaptcha: "Active · reCAPTCHA v3",
+                  "recaptcha-enterprise":
+                    "Active · Fraud Defense (reCAPTCHA Enterprise)",
                   debug: "Active · debug token (local dev)",
                   "not-configured": "Not configured",
                   failed: "Failed to initialize",

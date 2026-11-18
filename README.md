@@ -79,7 +79,8 @@ npm run dev
 | --- | --- |
 | `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`, `VITE_FIREBASE_MEASUREMENT_ID` | Firebase console → Project settings → General → *Your apps* → SDK setup and configuration |
 | `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` | Firebase console → App Check → Apps → *Manage debug tokens* (local dev only — never ship this in production) |
-| `VITE_FIREBASE_RECAPTCHA_SITE_KEY` | reCAPTCHA v3 site key registered in App Check (production) |
+| `VITE_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY` | Fraud Defense (reCAPTCHA Enterprise) site key registered in App Check (production) |
+| `VITE_FIREBASE_RECAPTCHA_SITE_KEY` | reCAPTCHA v3 site key (legacy fallback; Firebase has retired new Classic registrations) |
 
 > 🔐 Secrets discipline: the app reads all config from environment variables. `.env*` files are git-ignored (except `.env.example` placeholders). The App Check debug token is **only** read from the environment — it is never hardcoded in source.
 

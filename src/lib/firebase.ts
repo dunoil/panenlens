@@ -6,7 +6,10 @@
  * - App Check is initialized before any AI Logic call. Firebase AI Logic
  *   enforces App Check, so requests without a valid token are rejected.
  * - App Check providers:
- *     · Production → reCAPTCHA v3 (VITE_FIREBASE_RECAPTCHA_SITE_KEY).
+ *     · Production → Fraud Defense / reCAPTCHA Enterprise
+ *       (VITE_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY; Firebase has retired
+ *       new reCAPTCHA Classic registrations), falling back to reCAPTCHA v3
+ *       (VITE_FIREBASE_RECAPTCHA_SITE_KEY) when only that is provided.
  *     · Local development → the App Check *debug provider*. Setting
  *       `self.FIREBASE_APPCHECK_DEBUG_TOKEN` before `initializeAppCheck`
  *       makes the SDK exchange the registered debug token for real App
@@ -17,6 +20,7 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import {
   initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
   ReCaptchaV3Provider,
   type AppCheck,
 } from "firebase/app-check";
@@ -45,6 +49,7 @@ export const firebaseConfigured = Boolean(
 
 export type AppCheckMode =
   | "recaptcha"
+  | "recaptcha-enterprise"
   | "debug"
   | "not-configured"
   | "failed"
@@ -71,6 +76,8 @@ function initAppCheck(app: FirebaseApp, warnings: string[]): {
   const siteKey = import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY as
     | string
     | undefined;
+  const enterpriseSiteKey = import.meta.env
+    .VITE_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY as string | undefined;
 
   try {
     if (debugToken) {
@@ -81,6 +88,17 @@ function initAppCheck(app: FirebaseApp, warnings: string[]): {
       (
         self as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN?: string }
       ).FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
+    }
+
+    if (enterpriseSiteKey) {
+      const appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaEnterpriseProvider(enterpriseSiteKey),
+        isTokenAutoRefreshEnabled: true,
+      });
+      return {
+        appCheck,
+        mode: debugToken ? "debug" : "recaptcha-enterprise",
+      };
     }
 
     if (siteKey) {
