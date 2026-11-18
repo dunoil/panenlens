@@ -39,7 +39,7 @@ export interface AIRunMeta {
   determinedBy: SourceDetermination;
   /** Wall-clock latency of the generateContent call, in milliseconds. */
   latencyMs: number;
-  /** Human-readable model description, e.g. "Gemini 2.5 Flash (cloud)". */
+  /** Human-readable model description, e.g. "Gemini 3.5 Flash Lite (cloud)". */
   modelLabel: string;
   at: number;
 }

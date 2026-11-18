@@ -43,7 +43,7 @@ export function AboutView() {
               <li>
                 Mode: <code className="font-semibold">ONLY_IN_CLOUD</code>
               </li>
-              <li>Model: Gemini 2.5 Flash</li>
+              <li>Model: Gemini 3.5 Flash Lite</li>
             </ul>
           </div>
           <div className="flex items-center justify-center">

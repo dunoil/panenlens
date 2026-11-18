@@ -14,7 +14,7 @@ Every AI feature in PanenLens runs through the official Firebase JS SDK (`fireba
 
 | Feature | Inference mode | Backend | Why |
 | --- | --- | --- | --- |
-| Leaf-photo diagnosis | `ONLY_IN_CLOUD` | Cloud Gemini 2.5 Flash | Needs full multimodal reasoning + strict structured JSON output (disease, confidence, severity, organic/chemical treatment steps, prevention). |
+| Leaf-photo diagnosis | `ONLY_IN_CLOUD` | Cloud Gemini 3.5 Flash Lite | Needs full multimodal reasoning + strict structured JSON output (disease, confidence, severity, organic/chemical treatment steps, prevention). |
 | **Simplify** a care plan | `PREFER_ON_DEVICE` | Gemini Nano → cloud fallback | Plain-language rewrite; must work offline in the field. |
 | **Translate to Bahasa Indonesia** | `PREFER_ON_DEVICE` | Gemini Nano → cloud fallback | Translation is a classic on-device task; instant and private. |
 | **Follow-up questions** on a diagnosis | `PREFER_ON_DEVICE` | Gemini Nano → cloud fallback | Single-turn Q&A with the diagnosis folded into the prompt. |
