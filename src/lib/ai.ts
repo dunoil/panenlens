@@ -108,6 +108,12 @@ function friendlyError(err: unknown): Error {
         details,
     );
   }
+  if (/\[500\]|\[503\]|high demand|overload|unavailable/i.test(raw)) {
+    return new Error(
+      "The cloud AI is unusually busy right now (Google reports high demand). Please wait a minute and try again — your photo is still attached." +
+        details,
+    );
+  }
   if (/quota|429|resource-exhausted/i.test(raw)) {
     return new Error(
       "The free Gemini quota is exhausted right now. Please wait a little and try again." +
@@ -309,14 +315,23 @@ function parseDiagnosis(raw: string): Diagnosis {
  * The lightweight follow-up actions on the result are the on-device part of
  * the hybrid story.
  */
-export async function diagnoseLeafPhoto(
+/** True for transient server-side overload errors worth retrying/falling back. */
+function isOverloadError(err: unknown): boolean {
+  const raw = err instanceof Error ? err.message : String(err);
+  return /\[500\]|\[503\]|high demand|overload|unavailable|internal error/i.test(
+    raw,
+  );
+}
+
+async function runDiagnosisOnce(
+  modelName: string,
   imageBase64: string,
   mimeType: string,
 ): Promise<{ diagnosis: Diagnosis; meta: AIRunMeta }> {
   const model = getGenerativeModel(getAIService(), {
     mode: InferenceMode.ONLY_IN_CLOUD,
     inCloudParams: {
-      model: CLOUD_DIAGNOSIS_MODEL,
+      model: modelName,
       generationConfig: {
         temperature: 0.35,
         responseMimeType: "application/json",
@@ -327,20 +342,53 @@ export async function diagnoseLeafPhoto(
   });
 
   const started = performance.now();
+  const result = await model.generateContent([
+    { type: "text", text: DIAGNOSIS_PROMPT },
+    { type: "inlineData", inlineData: { data: imageBase64, mimeType } },
+  ]);
+  const latencyMs = Math.round(performance.now() - started);
+  const meta = resolveMeta({
+    inferenceSource: result.response.inferenceSource,
+    mode: InferenceMode.ONLY_IN_CLOUD,
+    nanoReadyBeforeCall: false,
+    latencyMs,
+    cloudModelLabel: `${modelName} · cloud`,
+  });
+  return { diagnosis: parseDiagnosis(result.response.text()), meta };
+}
+
+export async function diagnoseLeafPhoto(
+  imageBase64: string,
+  mimeType: string,
+): Promise<{ diagnosis: Diagnosis; meta: AIRunMeta }> {
+  // Resilience: the flagship cloud model can hit transient "high demand"
+  // 500s. Retry it once, then fall back to the Lite cloud model (also
+  // multimodal) so a farmer still gets a diagnosis; the router badge shows
+  // whichever model actually served the answer.
   try {
-    const result = await model.generateContent([
-      { type: "text", text: DIAGNOSIS_PROMPT },
-      { type: "inlineData", inlineData: { data: imageBase64, mimeType } },
-    ]);
-    const latencyMs = Math.round(performance.now() - started);
-    const meta = resolveMeta({
-      inferenceSource: result.response.inferenceSource,
-      mode: InferenceMode.ONLY_IN_CLOUD,
-      nanoReadyBeforeCall: false,
-      latencyMs,
-      cloudModelLabel: `${CLOUD_DIAGNOSIS_MODEL} · cloud`,
-    });
-    return { diagnosis: parseDiagnosis(result.response.text()), meta };
+    return await runDiagnosisOnce(CLOUD_DIAGNOSIS_MODEL, imageBase64, mimeType);
+  } catch (firstErr) {
+    if (!isOverloadError(firstErr)) throw friendlyError(firstErr);
+    console.warn(
+      "[PanenLens] Diagnosis model overloaded, retrying once:",
+      firstErr,
+    );
+  }
+  try {
+    return await runDiagnosisOnce(CLOUD_DIAGNOSIS_MODEL, imageBase64, mimeType);
+  } catch (secondErr) {
+    if (!isOverloadError(secondErr)) throw friendlyError(secondErr);
+    console.warn(
+      "[PanenLens] Diagnosis model still overloaded, falling back to Lite:",
+      secondErr,
+    );
+  }
+  try {
+    return await runDiagnosisOnce(
+      HYBRID_CLOUD_FALLBACK_MODEL,
+      imageBase64,
+      mimeType,
+    );
   } catch (err) {
     throw friendlyError(err);
   }
